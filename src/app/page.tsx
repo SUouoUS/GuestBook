@@ -7,16 +7,15 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { Session } from '@supabase/supabase-js';
 
-// --- Theme Colors for Avatars ---
 const AVATAR_COLORS = [
-  { bg: 'd1fae5', text: '064e3b' }, // Emerald
-  { bg: 'cffafe', text: '164e63' }, // Cyan
-  { bg: 'e0e7ff', text: '312e81' }, // Indigo
-  { bg: 'fce7f3', text: '831843' }, // Pink
-  { bg: 'fef08a', text: '713f12' }, // Yellow
-  { bg: 'ffedd5', text: '7c2d12' }, // Orange
-  { bg: 'ccfbf1', text: '115e59' }, // Teal
-  { bg: 'dbeafe', text: '1e3a8a' }, // Blue
+  { bg: 'd1fae5', text: '064e3b' },
+  { bg: 'cffafe', text: '164e63' },
+  { bg: 'e0e7ff', text: '312e81' },
+  { bg: 'fce7f3', text: '831843' },
+  { bg: 'fef08a', text: '713f12' },
+  { bg: 'ffedd5', text: '7c2d12' },
+  { bg: 'ccfbf1', text: '115e59' },
+  { bg: 'dbeafe', text: '1e3a8a' },
 ];
 
 const getAvatarTheme = (name: string) => {
@@ -24,7 +23,6 @@ const getAvatarTheme = (name: string) => {
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 };
 
-// --- Types ---
 type Message = {
   id: string;
   user_id: string;
@@ -39,14 +37,12 @@ export default function GuestbookPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   
-  // Auth Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
 
-  // App State
   const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -54,7 +50,7 @@ export default function GuestbookPage() {
   const [likedMessageIds, setLikedMessageIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Session 체크
+  // Load session
   useEffect(() => {
     if (!supabase) {
       setIsAuthLoading(false);
@@ -73,7 +69,7 @@ export default function GuestbookPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // 2. 데이터 로드 및 실시간 구독
+  // Fetch messages & subscribe to realtime updates
   useEffect(() => {
     if (!session || !supabase) return;
 
@@ -120,7 +116,6 @@ export default function GuestbookPage() {
     };
   }, [session]);
 
-  // --- Auth Handlers ---
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
@@ -141,7 +136,6 @@ export default function GuestbookPage() {
     if (supabase) await supabase.auth.signOut();
   };
 
-  // --- App Handlers ---
   const filteredMessages = messages.filter((msg) => {
     if (activeTab === 'my') return msg.user_id === session?.user.id;
     return true;
@@ -205,11 +199,9 @@ export default function GuestbookPage() {
     </div>;
   }
 
-  // --- 로그인 화면 ---
   if (!session) {
     return (
       <div className="max-w-md mx-auto min-h-screen bg-[#FDFDFD] flex flex-col relative border-x border-gray-100 overflow-hidden">
-        {/* 상단 헤더 */}
         <header className="absolute top-0 w-full flex items-center px-6 pt-8 pb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100/50">
@@ -219,7 +211,6 @@ export default function GuestbookPage() {
           </div>
         </header>
 
-        {/* 배경 꾸밈 요소 (대구대 메인 컬러인 그린/블루 톤을 고급스럽게 변형) */}
         <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-emerald-100/40 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-teal-50/60 rounded-full blur-3xl pointer-events-none" />
 
@@ -284,14 +275,11 @@ export default function GuestbookPage() {
 
   const emailPrefix = session.user.email?.split('@')[0] || '익명';
 
-  // --- 메인 화면 ---
   return (
     <div className="max-w-md mx-auto min-h-screen bg-[#FDFDFD] flex flex-col relative shadow-2xl border-x border-gray-100 overflow-x-hidden">
       
-      {/* 배경 꾸밈 요소 */}
       <div className="absolute top-[-5%] left-[-10%] w-72 h-72 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Header */}
       <header className="pt-8 px-6 pb-2 flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100/50">
@@ -305,7 +293,6 @@ export default function GuestbookPage() {
         </button>
       </header>
 
-      {/* Greeting */}
       <div className="px-6 pt-6 pb-8 text-center z-10">
         <h2 className="text-2xl font-extrabold text-gray-900 mb-3 flex items-center justify-center gap-2">
           안녕하세요, <span className="bg-emerald-100/70 text-emerald-800 px-3 py-0.5 rounded-full text-xl shadow-sm border border-emerald-200/50">{emailPrefix}</span> 님!
@@ -313,7 +300,6 @@ export default function GuestbookPage() {
         <p className="text-gray-500 text-[15px]">오늘 학과 학우들에게 남기고 싶은 말이 있나요?</p>
       </div>
 
-      {/* Pill Tabs */}
       <div className="px-6 flex justify-center z-10 mb-6">
         <div className="bg-gray-100/80 backdrop-blur p-1 rounded-full flex gap-1 shadow-inner border border-gray-200/50">
           <button
@@ -341,7 +327,6 @@ export default function GuestbookPage() {
         </div>
       </div>
 
-      {/* Feed */}
       <main className="flex-1 px-5 pb-32 space-y-4 z-10">
         {isLoading ? (
           <div className="flex justify-center py-10">
@@ -408,7 +393,6 @@ export default function GuestbookPage() {
         <div ref={messagesEndRef} />
       </main>
 
-      {/* Sticky Bottom Input */}
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto w-full z-40 bg-gradient-to-t from-[#FDFDFD] via-[#FDFDFD] to-transparent pt-12 pb-safe">
         <div className="px-5 pb-5">
           <form
