@@ -27,24 +27,25 @@ export default function GuestbookPage() {
       setIsLoading(false);
       return;
     }
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
       setSession(session);
       setIsAuthLoading(false);
     });
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setSession(session);
     });
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (!session || !supabase) return;
+    const client = supabase;
+    if (!session || !client) return;
 
     const fetchMessages = async () => {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('messages')
         .select('*')
         .order('created_at', { ascending: false });
@@ -60,7 +61,7 @@ export default function GuestbookPage() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
-        (payload) => {
+        (payload: any) => {
           const newMsg = payload.new as Message;
           setMessages((prev) => {
             if (prev.find((msg) => msg.id === newMsg.id)) return prev;
@@ -71,7 +72,7 @@ export default function GuestbookPage() {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages' },
-        (payload) => {
+        (payload: any) => {
           const updatedMsg = payload.new as Message;
           setMessages((prev) =>
             prev.map((msg) => (msg.id === updatedMsg.id ? updatedMsg : msg))
@@ -100,13 +101,15 @@ export default function GuestbookPage() {
       prev.map((msg) => (msg.id === id ? { ...msg, likes: newLikes } : msg))
     );
 
-    if (supabase) {
-      await supabase.from('messages').update({ likes: newLikes }).eq('id', id);
+    const client = supabase;
+    if (client) {
+      await client.from('messages').update({ likes: newLikes }).eq('id', id);
     }
   };
 
   const handleSubmit = async (content: string) => {
-    if (!supabase || !session) return;
+    const client = supabase;
+    if (!client || !session) return;
 
     const emailPrefix = session.user.email?.split('@')[0] || '익명';
     const theme = getAvatarTheme(emailPrefix);
@@ -119,7 +122,7 @@ export default function GuestbookPage() {
       likes: 0,
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('messages')
       .insert([newMessage])
       .select()

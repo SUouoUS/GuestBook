@@ -15,7 +15,6 @@ export function AuthForm() {
     e.preventDefault();
     setAuthError('');
     setAuthSuccess('');
-    if (!supabase) return;
 
     if (isLoginMode) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
